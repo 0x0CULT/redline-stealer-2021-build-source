@@ -50,65 +50,25 @@ public static class Resolution
 		return result;
 	}
 
-	// Token: 0x06000135 RID: 309 RVA: 0x0000AA90 File Offset: 0x00008C90
 	public static byte[] Print()
 	{
-		byte[] result;
 		try
 		{
-			object obj = Resolution.MonitorSize();
-			if (Resolution.<>o__4.<>p__2 == null)
-			{
-				Resolution.<>o__4.<>p__2 = CallSite<Func<CallSite, Type, object, object, Bitmap>>.Create(Binder.InvokeConstructor(CSharpBinderFlags.None, typeof(Resolution), new CSharpArgumentInfo[]
-				{
-					CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.UseCompileTimeType | CSharpArgumentInfoFlags.IsStaticType, null),
-					CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null),
-					CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
-				}));
-			}
-			Func<CallSite, Type, object, object, Bitmap> target = Resolution.<>o__4.<>p__2.Target;
-			CallSite <>p__ = Resolution.<>o__4.<>p__2;
-			Type typeFromHandle = typeof(Bitmap);
-			if (Resolution.<>o__4.<>p__0 == null)
-			{
-				Resolution.<>o__4.<>p__0 = CallSite<Func<CallSite, object, object>>.Create(Binder.GetMember(CSharpBinderFlags.None, "Width", typeof(Resolution), new CSharpArgumentInfo[]
-				{
-					CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
-				}));
-			}
-			object arg = Resolution.<>o__4.<>p__0.Target(Resolution.<>o__4.<>p__0, obj);
-			if (Resolution.<>o__4.<>p__1 == null)
-			{
-				Resolution.<>o__4.<>p__1 = CallSite<Func<CallSite, object, object>>.Create(Binder.GetMember(CSharpBinderFlags.None, "Height", typeof(Resolution), new CSharpArgumentInfo[]
-				{
-					CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
-				}));
-			}
-			Bitmap bitmap = target(<>p__, typeFromHandle, arg, Resolution.<>o__4.<>p__1.Target(Resolution.<>o__4.<>p__1, obj));
+			dynamic val = MonitorSize();
+			Bitmap bitmap = new Bitmap(val.Width, val.Height);
 			using (Graphics graphics = Graphics.FromImage(bitmap))
 			{
 				graphics.InterpolationMode = InterpolationMode.Bicubic;
 				graphics.PixelOffsetMode = PixelOffsetMode.HighSpeed;
 				graphics.SmoothingMode = SmoothingMode.HighSpeed;
-				if (Resolution.<>o__4.<>p__3 == null)
-				{
-					Resolution.<>o__4.<>p__3 = CallSite<Action<CallSite, Graphics, Point, Point, object>>.Create(Binder.InvokeMember(CSharpBinderFlags.ResultDiscarded, "CopyFromScreen", null, typeof(Resolution), new CSharpArgumentInfo[]
-					{
-						CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.UseCompileTimeType, null),
-						CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.UseCompileTimeType, null),
-						CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.UseCompileTimeType, null),
-						CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
-					}));
-				}
-				Resolution.<>o__4.<>p__3.Target(Resolution.<>o__4.<>p__3, graphics, new Point(0, 0), new Point(0, 0), obj);
+				graphics.CopyFromScreen(new Point(0, 0), new Point(0, 0), val);
 			}
-			result = Resolution.ConvertToBytes(bitmap);
+			return ConvertToBytes(bitmap);
 		}
 		catch (Exception)
 		{
-			result = null;
+			return null;
 		}
-		return result;
 	}
 
 	// Token: 0x06000136 RID: 310 RVA: 0x0000AC88 File Offset: 0x00008E88
